@@ -50,90 +50,101 @@ int main(int argc, char** argv ){
     int cantidad = 0;
     ifstream archivoEntrada(argv[1]);
     MPI_Status status;
+
     if(rank==0){
         for(linea; getline(archivoEntrada, linea);){
 
-            if(Nproc > size){
+            if(Nproc >= size){
                 Nproc = 1;
             }
-            MPI_Send(&linea[0],linea.size()+1,MPI_CHAR,Nproc,0,MPI_COMM_WORLD);
-            cantidad += 1;
-            Nproc += 1;
+            cout << linea << endl;
+
+            if(linea[0]!='y'){
+                MPI_Send(&linea[0],linea.size()+1,MPI_CHAR,Nproc,0,MPI_COMM_WORLD);
+                cantidad += 1;
+                Nproc += 1;
+            }
             
         }
+        Nproc = 1;
         while(cantidad!=0){
-            if(Nproc > size){
+            if(Nproc >= size){
                 Nproc = 1;
             }
             
-            MPI_Recv(&valorInt,sizeof(valorInt),MPI_INT,Nproc,0,MPI_COMM_WORLD,&status);
+            MPI_Recv(&valorInt,1,MPI_INT,Nproc,0,MPI_COMM_WORLD,&status);
             cantidad -= 1;
             valores_smi.push_back(valorInt);
             Nproc +=1;
         } 
     }else{
 
-        MPI_Status status;
+        
         MPI_Probe(0,0,MPI_COMM_WORLD,&status);
         int count;
         MPI_Get_count(&status,MPI_CHAR,&count);
         char buf [count];
         MPI_Recv(&buf,count,MPI_CHAR,0,0,MPI_COMM_WORLD,&status);
         std::string lineaX = buf; 
-
+        cout << lineaX << endl;
         string value="";
         for(int i=8;i<9999;i++){
-            if(linea[i]=='"'||linea[i]=='.'){
+            if(lineaX[i]=='"'||lineaX[i]=='.'){
+
                 int valorInt = stoi(value);
-                MPI_Send(&valorInt,sizeof(valorInt),MPI_INT,0,0,MPI_COMM_WORLD);
+                MPI_Send(&valorInt,1,MPI_INT,0,0,MPI_COMM_WORLD);
                 break;
             }
-            value += linea[i];
+            value += lineaX[i];
         }
     }
-    if(rank==0){
-        for(linea; getline(archivoEntrada, linea);){
 
-            if(Nproc > size){
-                Nproc = 1;
-            }
-            MPI_Send(&linea[0],linea.size()+1,MPI_CHAR,Nproc,0,MPI_COMM_WORLD);
-            cantidad += 1;
-            Nproc += 1;
+    // Nproc = 1;
+    // cantidad = 0;
+    // if(rank==0){
+    //     for(linea; getline(archivoEntrada, linea);){
+
+    //         if(Nproc >= size){
+    //             Nproc = 1;
+    //         }
+    //         if(linea[0]!='y'){
+    //             MPI_Send(&linea[0],linea.size()+1,MPI_CHAR,Nproc,0,MPI_COMM_WORLD);
+    //             cantidad += 1;
+    //             Nproc += 1;
+    //         }
             
-        }
-        while(cantidad!=0){
-            if(Nproc > size){
-                Nproc = 1;
-            }
+    //     }
+    //     Nproc = 1;
+    //     while(cantidad!=0){
+    //         if(Nproc >= size){
+    //             Nproc = 1;
+    //         }
             
-            MPI_Recv(&valorInt,sizeof(valorInt),MPI_INT,Nproc,0,MPI_COMM_WORLD,&status);
-            cantidad -= 1;
-            year_smi.push_back(valorInt);
-            Nproc +=1;
-        } 
-    }else{
+    //         MPI_Recv(&valorInt,1,MPI_INT,Nproc,0,MPI_COMM_WORLD,&status);
+    //         cantidad -= 1;
+    //         year_smi.push_back(valorInt);
+    //         Nproc +=1;
+    //     } 
+    // }else{
 
-        MPI_Status status;
-        MPI_Probe(0,0,MPI_COMM_WORLD,&status);
-        int count;
-        MPI_Get_count(&status,MPI_CHAR,&count);
-        char buf [count];
-        MPI_Recv(&buf,count,MPI_CHAR,0,0,MPI_COMM_WORLD,&status);
-        std::string lineaX = buf; 
+    //     MPI_Status status;
+    //     MPI_Probe(0,0,MPI_COMM_WORLD,&status);
+    //     int count;
+    //     MPI_Get_count(&status,MPI_CHAR,&count);
+    //     char buf [count];
+    //     MPI_Recv(&buf,count,MPI_CHAR,0,0,MPI_COMM_WORLD,&status);
+    //     std::string lineaX = buf; 
 
-        string year="";
-        for(int i=1;i<9999;i++){
-            if(linea[i]=='"'){
-                int valorInt = stoi(year);
-                MPI_Send(&valorInt,sizeof(valorInt),MPI_INT,0,0,MPI_COMM_WORLD);
-                break;
-            }
-            year += linea[i];
-        }
-
-        
-    }
+    //     string year="";
+    //     for(int i=1;i<9999;i++){
+    //         if(lineaX[i]=='"'){
+    //             int valorInt = stoi(year);
+    //             MPI_Send(&valorInt,1,MPI_INT,0,0,MPI_COMM_WORLD);
+    //             break;
+    //         }
+    //         year += lineaX[i];
+    //     }
+    // }
 
     // for(linea; getline(archivoEntrada, linea);){
     //     if(!linea.empty()){
